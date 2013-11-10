@@ -88,28 +88,56 @@ namespace MvcRouteTester.ApiRoute
 			}
 		}
 
-        internal static void HasHandler<THandler>(HttpConfiguration config, string url) where THandler : DelegatingHandler
-        {
-            var absoluteUrl = UrlHelpers.MakeAbsolute(url);
-            var request = new HttpRequestMessage(HttpMethod.Get, absoluteUrl);
-            var routeGenerator = new Generator(config, request);
-            if(!routeGenerator.HasHandler<THandler>())
-            {
-                var hasHandlerMessage = string.Format("Did not match a handler for url '{0}'", absoluteUrl);
-                Asserts.Fail(hasHandlerMessage);
-            }
-        }
-        internal static void HasNoHandler<THandler>(HttpConfiguration config, string url) where THandler : DelegatingHandler
-        {
-            var absoluteUrl = UrlHelpers.MakeAbsolute(url);
-            var request = new HttpRequestMessage(HttpMethod.Get, absoluteUrl);
-            var routeGenerator = new Generator(config, request);
-            if (routeGenerator.HasHandler<THandler>())
-            {
-                var hasHandlerMessage = string.Format("Matching handler found for url '{0}'", absoluteUrl);
-                Asserts.Fail(hasHandlerMessage);
-            }
-        }
+		internal static void HasHandler<THandler>(HttpConfiguration config, string url) where THandler : HttpMessageHandler
+		{
+			var absoluteUrl = UrlHelpers.MakeAbsolute(url);
+			var request = new HttpRequestMessage(HttpMethod.Get, absoluteUrl);
+			var routeGenerator = new Generator(config, request);
+
+			if(!routeGenerator.HasHandlerOfType<THandler>())
+			{
+				var actualHandlerType = routeGenerator.HandlerType();
+				var failureMessage = string.Format("Did not match handler type '{0}' for url '{1}', found ", typeof(THandler).Name, absoluteUrl);
+				if (actualHandlerType != null)
+				{
+					failureMessage += string.Format("a handler of type '{0}'.", actualHandlerType.Name);
+				}
+				else
+				{
+					failureMessage += "no handler.";
+				}
+				Asserts.Fail(failureMessage);
+			}
+		}
+
+		internal static void HasNoHandler(HttpConfiguration config, string url)
+		{
+			var absoluteUrl = UrlHelpers.MakeAbsolute(url);
+			var request = new HttpRequestMessage(HttpMethod.Get, absoluteUrl);
+			var routeGenerator = new Generator(config, request);
+
+			if (routeGenerator.HasHandler())
+			{
+				var hasHandlerMessage = string.Format("Matching handler of type '{0}' found for url '{1}'.",
+					routeGenerator.HandlerType().Name, absoluteUrl);
+				Asserts.Fail(hasHandlerMessage);
+			}
+		}
+		
+		internal static void HasNoHandlerofType<THandler>(HttpConfiguration config, string url) where THandler : HttpMessageHandler
+		{
+			var absoluteUrl = UrlHelpers.MakeAbsolute(url);
+			var request = new HttpRequestMessage(HttpMethod.Get, absoluteUrl);
+			var routeGenerator = new Generator(config, request);
+
+			if (routeGenerator.HasHandlerOfType<THandler>())
+			{
+				var hasHandlerMessage = string.Format("Matching handler of type '{0}' found for url '{1}'.", 
+					routeGenerator.HandlerType().Name, absoluteUrl);
+				Asserts.Fail(hasHandlerMessage);
+			}
+		}
+
 		private static RouteValues ReadRequestProperties(HttpConfiguration config, string url, HttpMethod httpMethod, string body, BodyFormat bodyFormat)
 		{
 			var request = new HttpRequestMessage(httpMethod, url);
@@ -118,5 +146,5 @@ namespace MvcRouteTester.ApiRoute
 			var routeGenerator = new Generator(config, request);
 			return routeGenerator.ReadRequestProperties(url, httpMethod, bodyFormat);
 		}
-    }
+	}
 }

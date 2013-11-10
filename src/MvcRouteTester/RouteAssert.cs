@@ -259,6 +259,21 @@ namespace MvcRouteTester
 			ApiRouteAssert.RouteMatches(config, url);
 		}
 
+		public static void AddIgnoreAttributes(IEnumerable<Type> types)
+		{
+			PropertyReader.AddIgnoreAttributes(types);
+		}
+
+		public static void AddIgnoreAttribute(Type type)
+		{
+			PropertyReader.AddIgnoreAttribute(type);
+		}
+
+		public static void ClearIgnoreAttributes()
+		{
+			PropertyReader.ClearIgnoreAttributes();
+		}
+
 		/// <summary>
 		/// Asserts that an entry in the routing table is not found that matches this url
 		/// </summary>
